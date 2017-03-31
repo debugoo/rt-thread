@@ -41,6 +41,22 @@ void rt_completion_init(struct rt_completion *completion)
 }
 RTM_EXPORT(rt_completion_init);
 
+
+void rt_completion_reset(struct rt_completion *completion)
+{
+    rt_base_t level;
+
+    RT_ASSERT(completion != RT_NULL);
+
+    level = rt_hw_interrupt_disable();
+
+    completion->flag = RT_UNCOMPLETED;
+
+    rt_hw_interrupt_enable(level);
+}
+RTM_EXPORT(rt_completion_reset);
+
+
 rt_err_t rt_completion_wait(struct rt_completion *completion,
                             rt_int32_t            timeout)
 {
