@@ -29,13 +29,30 @@
 #endif
 #include "main.h"
 #include "dbg.h"
-#include <sys/fcntl.h>
+//#include <sys/fcntl.h>
 #include "config.h"
 #include "log_trace.h"
 
 
 void rt_init_thread_entry(void* parameter)
 {
+    void rt_hw_sdcard_init(void);
+    int dfs_init(void);
+    void elm_init(void);
+    void nfs_init(void);
+    void dfs_yaffs2_init(void);
+    void dfs_uffs_init(void);
+    void dfs_jffs2_init(void);
+    void dfs_romfs_init(void);
+    void dfs_ramfs_init(void);
+    void devfs_init(void);
+    void libc_system_init(void);
+    int dfs_mount(const char   *device_name,
+                  const char   *path,
+                  const char   *filesystemtype,
+                  unsigned long rwflag,
+                  const void   *data);
+    extern void lwip_sys_init(void);
 #ifdef RT_USING_COMPONENTS_INIT
     /* initialization RT-Thread Components */
     //rt_components_init();
@@ -45,60 +62,49 @@ void rt_init_thread_entry(void* parameter)
 #endif
 
 #ifdef RT_USING_DFS
-    void rt_hw_sdcard_init(void);
     rt_hw_sdcard_init();
 #endif
 
 #ifdef RT_USING_DFS
-    int dfs_init(void);
     /* initialize the device file system */
     dfs_init();
 
 #ifdef RT_USING_DFS_ELMFAT
-    void elm_init(void);
     /* initialize the elm chan FatFS file system*/
     elm_init();
 #endif
 
 #if defined(RT_USING_DFS_NFS) && defined(RT_USING_LWIP)
-    void nfs_init(void);
     /* initialize NFSv3 client file system */
     nfs_init();
 #endif
 
 #ifdef RT_USING_DFS_YAFFS2
-    void dfs_yaffs2_init(void);
     dfs_yaffs2_init();
 #endif
 
 #ifdef RT_USING_DFS_UFFS
-    void dfs_uffs_init(void);
     dfs_uffs_init();
 #endif
 
 #ifdef RT_USING_DFS_JFFS2
-    void dfs_jffs2_init(void);
     dfs_jffs2_init();
 #endif
 
 #ifdef RT_USING_DFS_ROMFS
-    void dfs_romfs_init(void);
     dfs_romfs_init();
 #endif
 
 #ifdef RT_USING_DFS_RAMFS
-    void dfs_ramfs_init(void);
     dfs_ramfs_init();
 #endif
 
 #ifdef RT_USING_DFS_DEVFS
-    void devfs_init(void);
     devfs_init();
 #endif
 #endif /* end of RT_USING_DFS */
 
 #ifdef RT_USING_NEWLIB
-    void libc_system_init(void);
     libc_system_init();
 #else
     /* the pthread system initialization will be initiallized in libc */
@@ -115,11 +121,6 @@ void rt_init_thread_entry(void* parameter)
 
     /* Filesystem Initialization */
 #if defined(RT_USING_DFS) && defined(RT_USING_DFS_ELMFAT)
-    int dfs_mount(const char   *device_name,
-                  const char   *path,
-                  const char   *filesystemtype,
-                  unsigned long rwflag,
-                  const void   *data);
     /* mount sd card fat partition 1 as root directory */
     if (dfs_mount("sd0", "/", "elm", 0, 0) == 0)
     {
@@ -132,7 +133,6 @@ void rt_init_thread_entry(void* parameter)
     /* LwIP Initialization */
 #ifdef RT_USING_LWIP
     {
-        extern void lwip_sys_init(void);
 
         /* register ethernetif device */
         eth_system_device_init();
