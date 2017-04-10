@@ -17,20 +17,20 @@ void led_panel_init(rt_uint8_t *bits)
 {
     *bits=0x00;
 }
-void led_panel_all_close(rt_uint8_t *bits)
+void led_panel_all_off(rt_uint8_t *bits)
 {
     *bits=0x00;
 }
-void led_panel_all_open(rt_uint8_t *bits)
+void led_panel_all_on(rt_uint8_t *bits)
 {
     *bits=0x0F;
 }
-void led_panel_open(rt_uint8_t *bits, rt_uint8_t index)
+void led_panel_turn_on(rt_uint8_t *bits, rt_uint8_t index)
 {
     if (index <= 3)
         *bits |= 1<<index;
 }
-void led_panel_close(rt_uint8_t *bits, rt_uint8_t index)
+void led_panel_turn_off(rt_uint8_t *bits, rt_uint8_t index)
 {
     if (index <= 3)
     *bits &= ~(1<<index);

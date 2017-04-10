@@ -20,15 +20,23 @@
 
 struct led_bit_ops
 {
-    void (*turnon)(rt_uint8_t idx);
-    void (*turnoff)(rt_uint8_t idx);
+    void (*turn_on)(rt_uint8_t idx);
+    void (*turn_off)(rt_uint8_t idx);
+};
+struct led_blink_driver
+{
+    void (*start)(struct led_bit_ops* ops);
+    void (*stop)();
 };
 
+
 extern void led_panel_init(rt_uint8_t *bits);
-extern void led_panel_all_close(rt_uint8_t *bits);
-extern void led_panel_all_open(rt_uint8_t *bits);
-extern void led_panel_open(rt_uint8_t *bits, rt_uint8_t index);
-extern void led_panel_close(rt_uint8_t *bits, rt_uint8_t index);
-extern void led_panel_blink(rt_uint8_t index);
+extern void led_panel_all_off(rt_uint8_t *bits);
+extern void led_panel_all_on(rt_uint8_t *bits);
+extern void led_panel_turn_on(rt_uint8_t *bits, rt_uint8_t index);
+extern void led_panel_turn_off(rt_uint8_t *bits, rt_uint8_t index);
+
+extern void led_panel_blink_on(rt_uint8_t index);
+extern void led_panel_blink_off(rt_uint8_t index);
 
 #endif
