@@ -18,12 +18,45 @@ extern "C"
 {
 #include "rtthread.h"
 #include "led_panel.h"
+
+static rt_uint8_t led_image;
+
+struct image_counter
+{
+    rt_uint32_t on;
+    rt_uint32_t off;
+};
+static struct image_counter cnt[4];
+
+static void turn_on(rt_uint8_t idx)
+{
+    led_image |= 1<<idx;
+    cnt[idx].on ++;
+}
+static void turn_off(rt_uint8_t idx)
+{
+    led_image &= ~(1<<idx);
+    cnt[idx].off ++;
+}
+
 }
 
 TEST_GROUP(led_panel)
 {
+struct led_hw_ops ops;
 void setup()
 {
+    int i;
+    ops.turn_on = turn_on;
+    ops.turn_off = turn_off;
+    led_image = 0x0F;
+    for (i = 0; i < 4; ++i)
+    {
+        cnt[i].off = 0;
+        cnt[i].on = 0;
+    }
+    
+    led_panel_init(&ops);
 }
 void teardown()
 {
@@ -32,157 +65,341 @@ void teardown()
 
 TEST(led_panel, init)
 {
-    rt_uint8_t bits = 0x0F;
-    led_panel_init(&bits);
-    BYTES_EQUAL(0x00, bits);
+    led_image = 0x0F;
+    led_panel_init(&ops);
+    led_panel_update(0);
+    BYTES_EQUAL(0x00, led_image);
 }
 
-TEST(led_panel, all_off)
+/* Invalid mode */
+TEST(led_panel, invalid_mode)
 {
-    rt_uint8_t bits = 0x0F;
-    led_panel_all_off(&bits);
-    BYTES_EQUAL(0x00, bits);
+    led_panel_mode(LED_IMAGE_0, 0xFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0x00, led_image);
 }
 
-TEST(led_panel, all_on)
+/* switch on one by one */
+TEST(led_panel, switch_on_led0)
 {
-    rt_uint8_t bits = 0x00;
-    led_panel_all_on(&bits);
-    BYTES_EQUAL(0x0F, bits);
+    led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0x01, led_image);
 }
 
-TEST(led_panel, open_led0_clean)
+TEST(led_panel, switch_on_led1)
 {
-    rt_uint8_t bits = 0x00;
-    led_panel_turn_on(&bits, 0);
-    BYTES_EQUAL(0x01, bits);
+    led_panel_mode(LED_IMAGE_1, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0x02, led_image);
 }
 
-TEST(led_panel, open_led0_with_open_1)
+TEST(led_panel, switch_on_led2)
 {
-    rt_uint8_t bits = 0b10;
-    led_panel_turn_on(&bits, 0);
-    BYTES_EQUAL(0b10 + 1, bits);
+    led_panel_mode(LED_IMAGE_2, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0x04, led_image);
 }
 
-TEST(led_panel, open_led0_with_open_12)
+TEST(led_panel, switch_on_led3)
 {
-    rt_uint8_t bits = 0b110;
-    led_panel_turn_on(&bits, 0);
-    BYTES_EQUAL(0b110 + 1, bits);
+    led_panel_mode(LED_IMAGE_3, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0x08, led_image);
 }
 
-TEST(led_panel, open_led0_with_open_13)
+/* switch on combined */
+TEST(led_panel, switch_on_led01)
 {
-    rt_uint8_t bits = 0b1010;
-    led_panel_turn_on(&bits, 0);
-    BYTES_EQUAL(0b1010 + 1, bits);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_1, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b11, led_image);
 }
 
-TEST(led_panel, open_led0_with_open_23)
+TEST(led_panel, switch_on_led02)
 {
-    rt_uint8_t bits = 0b1100;
-    led_panel_turn_on(&bits, 0);
-    BYTES_EQUAL(0b1100 + 1, bits);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_2, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b101, led_image);
 }
 
-TEST(led_panel, open_led0_with_open_123)
+TEST(led_panel, switch_on_led03)
 {
-    rt_uint8_t bits = 0b1110;
-    led_panel_turn_on(&bits, 0);
-    BYTES_EQUAL(0b1110 + 1, bits);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_3, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1001, led_image);
 }
 
-TEST(led_panel, open_out_of_range_1)
+TEST(led_panel, switch_on_led12)
 {
-    rt_uint8_t bits = 0;
-    led_panel_turn_on(&bits, 4);
-    BYTES_EQUAL(0, bits);
+    led_panel_mode(LED_IMAGE_1|LED_IMAGE_2, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b110, led_image);
 }
 
-TEST(led_panel, open_out_of_range_2)
+TEST(led_panel, switch_on_led13)
 {
-    rt_uint8_t bits = 0;
-    led_panel_turn_on(&bits, 5);
-    BYTES_EQUAL(0, bits);
+    led_panel_mode(LED_IMAGE_1|LED_IMAGE_3, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1010, led_image);
 }
 
-TEST(led_panel, open_out_of_range_3)
+TEST(led_panel, switch_on_led23)
 {
-    rt_uint8_t bits = 0;
-    led_panel_turn_on(&bits, 6);
-    BYTES_EQUAL(0, bits);
+    led_panel_mode(LED_IMAGE_2|LED_IMAGE_3, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1100, led_image);
 }
 
-TEST(led_panel, open_out_of_range_4)
+TEST(led_panel, switch_on_led012)
 {
-    rt_uint8_t bits = 0;
-    led_panel_turn_on(&bits, 7);
-    BYTES_EQUAL(0, bits);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_1|LED_IMAGE_2, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b111, led_image);
 }
 
-TEST(led_panel, close_led0_with_open_0)
+TEST(led_panel, switch_on_led013)
 {
-    rt_uint8_t bits = 0b01;
-    led_panel_turn_off(&bits, 0);
-    BYTES_EQUAL(0b00, bits);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_1|LED_IMAGE_3, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1011, led_image);
 }
 
-TEST(led_panel, close_led0_with_open_01)
+TEST(led_panel, switch_on_led023)
 {
-    rt_uint8_t bits = 0b11;
-    led_panel_turn_off(&bits, 0);
-    BYTES_EQUAL(0b10, bits);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_2|LED_IMAGE_3, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1101, led_image);
 }
 
-TEST(led_panel, close_led0_with_open_012)
+TEST(led_panel, switch_on_led123)
 {
-    rt_uint8_t bits = 0b111;
-    led_panel_turn_off(&bits, 0);
-    BYTES_EQUAL(0b110, bits);
+    led_panel_mode(LED_IMAGE_1|LED_IMAGE_2|LED_IMAGE_3, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1110, led_image);
 }
 
-TEST(led_panel, close_led0_with_open_0123)
+TEST(led_panel, switch_on_led0123)
 {
-    rt_uint8_t bits = 0b1111;
-    led_panel_turn_off(&bits, 0);
-    BYTES_EQUAL(0b1110, bits);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_1|LED_IMAGE_2|LED_IMAGE_3, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1111, led_image);
 }
 
-
-TEST(led_panel, close_out_of_range_1)
+TEST(led_panel, switch_on_all)
 {
-    rt_uint8_t bits = 0xFF;
-    led_panel_turn_off(&bits, 4);
-    BYTES_EQUAL(0xFF, bits);
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1111, led_image);
 }
 
-TEST(led_panel, close_out_of_range_2)
+/* switch off one by one */
+TEST(led_panel, switch_off_led0)
 {
-    rt_uint8_t bits = 0xFF;
-    led_panel_turn_off(&bits, 5);
-    BYTES_EQUAL(0xFF, bits);
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1110, led_image);
 }
 
-TEST(led_panel, close_out_of_range_3)
+TEST(led_panel, switch_off_led1)
 {
-    rt_uint8_t bits = 0xFF;
-    led_panel_turn_off(&bits, 6);
-    BYTES_EQUAL(0xFF, bits);
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_1, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1101, led_image);
 }
 
-TEST(led_panel, close_out_of_range_4)
+TEST(led_panel, switch_off_led2)
 {
-    rt_uint8_t bits = 0xFF;
-    led_panel_turn_off(&bits, 7);
-    BYTES_EQUAL(0xFF, bits);
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_2, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1011, led_image);
 }
 
-TEST(led_panel, open_and_close_0)
+TEST(led_panel, switch_off_led3)
 {
-    rt_uint8_t bits = 0x0;
-    led_panel_turn_on(&bits, 0);
-    led_panel_turn_off(&bits, 0);
-    BYTES_EQUAL(0x00, bits);
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_3, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b111, led_image);
 }
 
+/* switch off combined */
+TEST(led_panel, switch_off_led01)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_1, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1100, led_image);
+}
+
+TEST(led_panel, switch_off_led02)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_2, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1010, led_image);
+}
+
+TEST(led_panel, switch_off_led03)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_3, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b110, led_image);
+}
+
+TEST(led_panel, switch_off_led012)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_1|LED_IMAGE_2, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1000, led_image);
+}
+
+TEST(led_panel, switch_off_led013)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_1|LED_IMAGE_3, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b100, led_image);
+}
+
+TEST(led_panel, switch_off_led023)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_2|LED_IMAGE_3, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b10, led_image);
+}
+
+TEST(led_panel, switch_off_led123)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_1|LED_IMAGE_2|LED_IMAGE_3, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0b1, led_image);
+}
+
+TEST(led_panel, switch_off_led0123)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_0|LED_IMAGE_1|LED_IMAGE_2|LED_IMAGE_3, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0, led_image);
+}
+
+TEST(led_panel, switch_off_all)
+{
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_ON);
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_SWITCH_OFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0, led_image);
+}
+
+/*
+ * flip mode
+ */
+TEST(led_panel, flip_1)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_FLIP_1);
+    for (i = 0; i < 100; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(50, cnt[0].on);
+    CHECK_EQUAL(50, cnt[0].off);
+}
+
+TEST(led_panel, flip_2)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_FLIP_2);
+    for (i = 0; i < 100; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(25, cnt[0].on);
+    CHECK_EQUAL(25, cnt[0].off);
+}
+
+TEST(led_panel, flip_4)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_FLIP_4);
+    for (i = 0; i < 800; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(100, cnt[0].on);
+    CHECK_EQUAL(100, cnt[0].off);
+}
+
+TEST(led_panel, flip_8)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_FLIP_8);
+    for (i = 0; i < 1600; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(100, cnt[0].on);
+    CHECK_EQUAL(100, cnt[0].off);
+}
+
+TEST(led_panel, flip_16)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_FLIP_16);
+    for (i = 0; i < 3200; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(100, cnt[0].on);
+    CHECK_EQUAL(100, cnt[0].off);
+}
+
+TEST(led_panel, flip_32)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_FLIP_32);
+    for (i = 0; i < 6400; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(100, cnt[0].on);
+    CHECK_EQUAL(100, cnt[0].off);
+}
+
+TEST(led_panel, flip_64)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_FLIP_64);
+    for (i = 0; i < 12800; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(100, cnt[0].on);
+    CHECK_EQUAL(100, cnt[0].off);
+}
+
+/*
+ * pattern mode
+ */
+
+/*
+ TEST(led_panel, pattern_1)
+ {
+     rt_uint32_t i;
+     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_1);
+     for (i = 0; i < 12800; ++i)
+     {
+         led_panel_update(i);
+     }
+     CHECK_EQUAL(100, cnt[0].on);
+     CHECK_EQUAL(100, cnt[0].off);
+ }
+*/

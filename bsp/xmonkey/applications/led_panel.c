@@ -13,27 +13,120 @@
  *****************************************************************************/
 #include "led_panel.h"
 
-void led_panel_init(rt_uint8_t *bits)
+static struct led_hw_ops* _ops = RT_NULL;
+#define LED_COUNT   (4)
+static rt_uint8_t _mode[LED_COUNT];
+
+
+#define IS_VALID_MODE_SWITCH(mode) \
+    (mode == LED_MODE_SWITCH_OFF || mode == LED_MODE_SWITCH_ON)
+
+#define IS_VALID_MODE_FLIP(mode) \
+    (mode == LED_MODE_FLIP_1 || \
+     mode == LED_MODE_FLIP_2 || \
+     mode == LED_MODE_FLIP_4 || \
+     mode == LED_MODE_FLIP_8 || \
+     mode == LED_MODE_FLIP_16 || \
+     mode == LED_MODE_FLIP_32 || \
+     mode == LED_MODE_FLIP_64)
+
+#define IS_VALID_MODE_PATTERN(mode) \
+    (mode == LED_MODE_PATTERN_1 || mode == LED_MODE_PATTERN_2)
+
+#define IS_VALID_MODE(mode) \
+    (IS_VALID_MODE_SWITCH(mode) || \
+     IS_VALID_MODE_FLIP(mode) || \
+     IS_VALID_MODE_PATTERN(mode))
+
+
+void led_panel_init(struct led_hw_ops* ops)
 {
-    *bits=0x00;
+    _ops = ops;
+    
+    _mode[0] = LED_MODE_SWITCH_OFF;
+    _mode[1] = LED_MODE_SWITCH_OFF;
+    _mode[2] = LED_MODE_SWITCH_OFF;
+    _mode[3] = LED_MODE_SWITCH_OFF;
 }
-void led_panel_all_off(rt_uint8_t *bits)
+
+static void led_panel_update_switch(rt_uint8_t index, rt_uint8_t mode)
 {
-    *bits=0x00;
+    if (mode == LED_MODE_SWITCH_OFF)
+        _ops->turn_off(index);
+
+    if (mode == LED_MODE_SWITCH_ON)
+        _ops->turn_on(index);
 }
-void led_panel_all_on(rt_uint8_t *bits)
+
+/* 在TICK上执行边界对齐 */
+static void led_panel_update_flip(rt_uint32_t tick, rt_uint8_t index, rt_uint8_t mode)
 {
-    *bits=0x0F;
+    rt_uint32_t interval = 1<<(mode - LED_MODE_FLIP_1);
+    rt_uint32_t T = interval<<1;
+    if (tick % T == 0)
+    {
+        _ops->turn_on(index);
+    }
+    else if (tick % interval == 0)
+    {
+        _ops->turn_off(index);
+    }
 }
-void led_panel_turn_on(rt_uint8_t *bits, rt_uint8_t index)
+/* 在TICK上执行边界对齐 */
+static void led_panel_update_pattern(rt_uint32_t tick, rt_uint8_t index, rt_uint8_t mode)
 {
-    if (index <= 3)
-        *bits |= 1<<index;
+    /* bit pattern 1
+     * 000,1
+     */
+    if (mode == LED_MODE_PATTERN_1)
+    {
+        rt_uint32_t interval = 4;
+        rt_uint32_t T = interval<<1;
+        if (tick % T == 0)
+        {
+            _ops->turn_on(index);
+        }
+        else if (tick % interval == 0)
+        {
+            _ops->turn_off(index);
+        }
+    }
+
+    /* bit pattern 2
+     * 0,1,000
+     */
 }
-void led_panel_turn_off(rt_uint8_t *bits, rt_uint8_t index)
+
+void led_panel_update(rt_uint32_t tick)
 {
-    if (index <= 3)
-    *bits &= ~(1<<index);
+    rt_uint8_t i;
+    for (i = 0; i < LED_COUNT; ++i)
+    {
+        if (IS_VALID_MODE_SWITCH(_mode[i]))
+            led_panel_update_switch(i, _mode[i]);
+
+        if (IS_VALID_MODE_FLIP(_mode[i]))
+            led_panel_update_flip(tick, i, _mode[i]);
+    }
 }
+
+void led_panel_mode(rt_uint8_t image, rt_uint8_t mode)
+{
+    if (!IS_VALID_MODE(mode))
+        return;
+    
+    if (image&LED_IMAGE_0)
+        _mode[0] = mode;
+    
+    if (image&LED_IMAGE_1)
+        _mode[1] = mode;
+    
+    if (image&LED_IMAGE_2)
+        _mode[2] = mode;
+    
+    if (image&LED_IMAGE_3)
+        _mode[3] = mode;
+}
+
 
 
