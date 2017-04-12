@@ -415,4 +415,13 @@ TEST(led_panel, flip_64)
      CHECK_EQUAL(80, cnt[0].off);
  }
 
+ IGNORE_TEST(led_panel, fast_switch_on)
+ {
+ }
+
+ IGNORE_TEST(led_panel, fast_switch_off)
+ {
+ }
+
+
 
