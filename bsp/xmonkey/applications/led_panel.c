@@ -49,6 +49,8 @@ void led_panel_init(struct led_hw_ops* ops)
     _mode[3] = LED_MODE_SWITCH_OFF;
 }
 
+/* 开关更新
+ */
 static void led_panel_update_switch(rt_uint8_t index, rt_uint8_t mode)
 {
     if (mode == LED_MODE_SWITCH_OFF)
@@ -58,7 +60,9 @@ static void led_panel_update_switch(rt_uint8_t index, rt_uint8_t mode)
         _ops->turn_on(index);
 }
 
-/* 在TICK上执行边界对齐 */
+/* 翻转更新
+ * 在TICK上执行边界对齐 
+ */
 static void led_panel_update_flip(rt_uint32_t tick, rt_uint8_t index, rt_uint8_t mode)
 {
     rt_uint32_t interval = 1<<(mode - LED_MODE_FLIP_1);
@@ -72,29 +76,32 @@ static void led_panel_update_flip(rt_uint32_t tick, rt_uint8_t index, rt_uint8_t
         _ops->turn_off(index);
     }
 }
-/* 在TICK上执行边界对齐 */
+
+/* 模式更新
+ * 在TICK上执行边界对齐 
+ */
+struct led_pattern
+{
+    rt_uint32_t pattern;
+    rt_uint8_t len;
+};
+static struct led_pattern pat[2] = 
+    {
+        {0x08, 4}, /* for pattern: 1000 */
+        //{0x02, 5}, /* for pattern: 00010 */
+        {0xF0CC, 16}, /* for pattern: 1111 0000 1100 1100 */
+    };
+static void set_pattern(rt_uint8_t index, rt_bool_t onoff)
+{
+    onoff?_ops->turn_on(index):_ops->turn_off(index);
+}
 static void led_panel_update_pattern(rt_uint32_t tick, rt_uint8_t index, rt_uint8_t mode)
 {
-    /* bit pattern 1
-     * 000,1
-     */
-    if (mode == LED_MODE_PATTERN_1)
-    {
-        rt_uint32_t interval = 4;
-        rt_uint32_t T = interval<<1;
-        if (tick % T == 0)
-        {
-            _ops->turn_on(index);
-        }
-        else if (tick % interval == 0)
-        {
-            _ops->turn_off(index);
-        }
-    }
-
-    /* bit pattern 2
-     * 0,1,000
-     */
+    int pattern_index = mode - LED_MODE_PATTERN_1;
+    struct led_pattern* p = &pat[pattern_index];
+    rt_uint32_t reminder = tick%(p->len);
+    rt_bool_t onoff = ((1<<reminder)&p->pattern);
+    set_pattern(index, onoff);
 }
 
 void led_panel_update(rt_uint32_t tick)
@@ -107,6 +114,9 @@ void led_panel_update(rt_uint32_t tick)
 
         if (IS_VALID_MODE_FLIP(_mode[i]))
             led_panel_update_flip(tick, i, _mode[i]);
+
+        if (IS_VALID_MODE_PATTERN(_mode[i]))
+            led_panel_update_pattern(tick, i, _mode[i]);
     }
 }
 

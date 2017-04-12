@@ -390,16 +390,29 @@ TEST(led_panel, flip_64)
  * pattern mode
  */
 
-/*
+
  TEST(led_panel, pattern_1)
  {
      rt_uint32_t i;
      led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_1);
-     for (i = 0; i < 12800; ++i)
+     for (i = 0; i < 100; ++i)
      {
          led_panel_update(i);
      }
-     CHECK_EQUAL(100, cnt[0].on);
-     CHECK_EQUAL(100, cnt[0].off);
+     CHECK_EQUAL(25, cnt[0].on);
+     CHECK_EQUAL(75, cnt[0].off);
  }
-*/
+
+ TEST(led_panel, pattern_2)
+ {
+     rt_uint32_t i;
+     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_2);
+     for (i = 0; i < 160; ++i)
+     {
+         led_panel_update(i);
+     }
+     CHECK_EQUAL(80, cnt[0].on);
+     CHECK_EQUAL(80, cnt[0].off);
+ }
+
+
