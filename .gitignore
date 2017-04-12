@@ -21,3 +21,23 @@ documentation/html
 *.a
 *.i
 *.d
+
+# SourceInsight project
+SI3
+SI4
+
+lib
+
+# Python:
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
