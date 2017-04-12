@@ -45,18 +45,34 @@ void turn_off(rt_uint8_t index)
     rt_pin_write(pins[index], 1);
 }
 struct led_hw_ops ops = {turn_on, turn_off};
-rt_uint8_t order_map[4] = {LED_IMAGE_0, LED_IMAGE_1, LED_IMAGE_2, LED_IMAGE_3};
+
+rt_uint8_t modes[4] = {LED_MODE_SWITCH_ON, LED_MODE_FLIP_8, LED_MODE_PATTERN_1, LED_MODE_PATTERN_2};
 static void main_run(void* parameter)
 {
     RT_ASSERT(prolog() == RT_EOK);
     led_panel_init(&ops);
-    //2134,1023
+
     led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_ON);
     led_panel_mode(LED_IMAGE_1, LED_MODE_FLIP_8);
     led_panel_mode(LED_IMAGE_2, LED_MODE_PATTERN_1);
     led_panel_mode(LED_IMAGE_3, LED_MODE_PATTERN_2);
     rt_timer_start(&t);
-    while(1);
+    while(1)
+    {
+        int i = 0;
+        rt_thread_delay(1000);
+        for (i = 0; i < 4; ++i)
+        {
+            if (++modes[i] > LED_MODE_PATTERN_2)
+            {
+                modes[i] = LED_MODE_SWITCH_OFF;
+            }
+        }
+        led_panel_mode(LED_IMAGE_0, modes[0]);
+        led_panel_mode(LED_IMAGE_1, modes[1]);
+        led_panel_mode(LED_IMAGE_2, modes[2]);
+        led_panel_mode(LED_IMAGE_3, modes[3]);
+    }
     RT_ASSERT(epilog() == RT_EOK);
 }
 
