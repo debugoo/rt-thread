@@ -451,6 +451,11 @@
               <FileType>1</FileType>
               <FilePath>applications\startup.c</FilePath>
             </File>
+            <File>
+              <FileName>led_panel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\led_panel.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
