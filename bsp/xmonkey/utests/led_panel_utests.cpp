@@ -38,6 +38,15 @@ static void turn_off(rt_uint8_t idx)
     led_image &= ~(1<<idx);
     cnt[idx].off ++;
 }
+static rt_uint8_t custom_0000(rt_uint32_t tick)
+{
+    return 0;
+}
+static rt_uint8_t custom_1111(rt_uint32_t tick)
+{
+    return 0xF;
+}
+
 
 }
 
@@ -391,37 +400,62 @@ TEST(led_panel, flip_64)
  */
 
 
- TEST(led_panel, pattern_1)
- {
-     rt_uint32_t i;
-     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_1);
-     for (i = 0; i < 100; ++i)
-     {
-         led_panel_update(i);
-     }
-     CHECK_EQUAL(25, cnt[0].on);
-     CHECK_EQUAL(75, cnt[0].off);
- }
+TEST(led_panel, pattern_1)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_1);
+    for (i = 0; i < 100; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(25, cnt[0].on);
+    CHECK_EQUAL(75, cnt[0].off);
+}
 
- TEST(led_panel, pattern_2)
- {
-     rt_uint32_t i;
-     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_2);
-     for (i = 0; i < 160; ++i)
-     {
-         led_panel_update(i);
-     }
-     CHECK_EQUAL(80, cnt[0].on);
-     CHECK_EQUAL(80, cnt[0].off);
- }
+TEST(led_panel, pattern_2)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_2);
+    for (i = 0; i < 160; ++i)
+    {
+        led_panel_update(i);
+    }
+    CHECK_EQUAL(80, cnt[0].on);
+    CHECK_EQUAL(80, cnt[0].off);
+}
 
- IGNORE_TEST(led_panel, fast_switch_on)
- {
- }
+IGNORE_TEST(led_panel, fast_switch_on)
+{
+}
 
- IGNORE_TEST(led_panel, fast_switch_off)
- {
- }
+IGNORE_TEST(led_panel, fast_switch_off)
+{
+}
 
+TEST(led_panel, custom_0000)
+{
+    led_image = 0xF;
+    led_panel_custom(custom_0000);
+    led_panel_update(0);
+    BYTES_EQUAL(0, led_image);
+}
+
+TEST(led_panel, custom_1111)
+{
+    led_image = 0x0;
+    led_panel_custom(custom_1111);
+    led_panel_update(0);
+    BYTES_EQUAL(0xF, led_image);
+}
+
+TEST(led_panel, cancel_custom)
+{
+    led_image = 0x0;
+    led_panel_custom(custom_1111);
+    led_panel_custom(RT_NULL);
+    led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_ON);
+    led_panel_update(0);
+    BYTES_EQUAL(0x1, led_image);
+}
 
 

@@ -70,6 +70,10 @@ extern void led_panel_init(struct led_hw_ops* ops);
  */
 extern void led_panel_mode(rt_uint8_t image, rt_uint8_t mode);
 
+//typedef rt_uint8_t (*get_bitmap)(rt_uint32_t tick) ;
+extern void led_panel_custom(rt_uint8_t (*get_bitmap)(rt_uint32_t tick));
+
+
 extern void led_panel_on(rt_uint8_t image);
 extern void led_panel_off(rt_uint8_t image);
 
