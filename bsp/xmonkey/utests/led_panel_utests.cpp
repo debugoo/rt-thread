@@ -16,6 +16,9 @@
 
 extern "C"
 {
+#include <stdlib.h>
+#include <string.h>
+
 #include "rtthread.h"
 #include "led_panel.h"
 
@@ -38,15 +41,6 @@ static void turn_off(rt_uint8_t idx)
     led_image &= ~(1<<idx);
     cnt[idx].off ++;
 }
-static rt_uint8_t custom_0000(rt_uint32_t tick)
-{
-    return 0;
-}
-static rt_uint8_t custom_1111(rt_uint32_t tick)
-{
-    return 0xF;
-}
-
 
 }
 
@@ -403,25 +397,75 @@ TEST(led_panel, flip_64)
 TEST(led_panel, pattern_1)
 {
     rt_uint32_t i;
+    rt_uint32_t cnt_on = 0;
+    rt_uint32_t cnt_off = 0;
+
     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_1);
-    for (i = 0; i < 100; ++i)
+    for (i = 0; i < 80; ++i)
     {
         led_panel_update(i);
+        (led_image&1)?cnt_on++:cnt_off++;
+        
     }
-    CHECK_EQUAL(25, cnt[0].on);
-    CHECK_EQUAL(75, cnt[0].off);
+    CHECK_EQUAL(10, cnt[0].on);
+    CHECK_EQUAL(30, cnt[0].off);
+
+    CHECK_EQUAL(20, cnt_on);
+    CHECK_EQUAL(60, cnt_off);
 }
 
 TEST(led_panel, pattern_2)
 {
     rt_uint32_t i;
+    rt_uint32_t cnt_on = 0;
+    rt_uint32_t cnt_off = 0;
     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_2);
     for (i = 0; i < 160; ++i)
     {
         led_panel_update(i);
+        (led_image&1)?cnt_on++:cnt_off++;
     }
-    CHECK_EQUAL(80, cnt[0].on);
-    CHECK_EQUAL(80, cnt[0].off);
+    CHECK_EQUAL(40, cnt[0].on);
+    CHECK_EQUAL(40, cnt[0].off);
+
+    CHECK_EQUAL(80, cnt_on);
+    CHECK_EQUAL(80, cnt_off);
+}
+
+TEST(led_panel, pattern_3)
+{
+    rt_uint32_t i;
+    rt_uint32_t cnt_on = 0;
+    rt_uint32_t cnt_off = 0;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_3);
+    for (i = 0; i < 160; ++i)
+    {
+        led_panel_update(i);
+        (led_image&1)?cnt_on++:cnt_off++;
+    }
+    CHECK_EQUAL(10, cnt[0].on);
+    CHECK_EQUAL(70, cnt[0].off);
+
+    CHECK_EQUAL(20, cnt_on);
+    CHECK_EQUAL(140, cnt_off);
+}
+
+TEST(led_panel, pattern_4)
+{
+    rt_uint32_t i;
+    rt_uint32_t cnt_on = 0;
+    rt_uint32_t cnt_off = 0;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_4);
+    for (i = 0; i < 320; ++i)
+    {
+        led_panel_update(i);
+        (led_image&1)?cnt_on++:cnt_off++;
+    }
+    CHECK_EQUAL(60, cnt[0].on);
+    CHECK_EQUAL(100, cnt[0].off);
+
+    CHECK_EQUAL(120, cnt_on);
+    CHECK_EQUAL(200, cnt_off);
 }
 
 IGNORE_TEST(led_panel, fast_switch_on)
@@ -432,30 +476,73 @@ IGNORE_TEST(led_panel, fast_switch_off)
 {
 }
 
-TEST(led_panel, custom_0000)
+
+
+TEST(led_panel, group_1)
 {
-    led_image = 0xF;
-    led_panel_custom(custom_0000);
-    led_panel_update(0);
-    BYTES_EQUAL(0, led_image);
+    struct image_counter x[4];
+    memset(x, 0, sizeof(struct image_counter)*4);
+    rt_uint32_t i;
+    led_panel_group(LED_GROUP_1);
+    for (i = 0; i < 14; ++i)
+    {
+        int j = 0;
+        led_panel_update(i);
+        for (j = 0; j < 4; ++j)
+        {
+            (led_image&(1<<j))?x[j].on++:x[j].off++;
+        }
+    }
+
+    CHECK_EQUAL(0*2, x[0].off);
+    CHECK_EQUAL(7*2, x[0].on);
+    CHECK_EQUAL(2*2, x[1].off);
+    CHECK_EQUAL(5*2, x[1].on);
+    CHECK_EQUAL(4*2, x[2].off);
+    CHECK_EQUAL(3*2, x[2].on);
+    CHECK_EQUAL(6*2, x[3].off);
+    CHECK_EQUAL(1*2, x[3].on);
 }
 
-TEST(led_panel, custom_1111)
+TEST(led_panel, group_2)
 {
-    led_image = 0x0;
-    led_panel_custom(custom_1111);
-    led_panel_update(0);
-    BYTES_EQUAL(0xF, led_image);
+    struct image_counter x[4];
+    memset(x, 0, sizeof(struct image_counter)*4);
+    rt_uint32_t i;
+    led_panel_group(LED_GROUP_2);
+    for (i = 0; i < 4; ++i)
+    {
+        int j = 0;
+        led_panel_update(i);
+        for (j = 0; j < 4; ++j)
+        {
+            (led_image&(1<<j))?x[j].on++:x[j].off++;
+        }
+    }
+
+    CHECK_EQUAL(1*2, x[0].off);
+    CHECK_EQUAL(1*2, x[0].on);
+    CHECK_EQUAL(1*2, x[1].off);
+    CHECK_EQUAL(1*2, x[1].on);
+    CHECK_EQUAL(1*2, x[2].off);
+    CHECK_EQUAL(1*2, x[2].on);
+    CHECK_EQUAL(1*2, x[3].off);
+    CHECK_EQUAL(1*2, x[3].on);
 }
 
-TEST(led_panel, cancel_custom)
+/* Invalid group */
+TEST(led_panel, invalid_group_1)
 {
-    led_image = 0x0;
-    led_panel_custom(custom_1111);
-    led_panel_custom(RT_NULL);
-    led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_ON);
+    led_panel_group(2);
     led_panel_update(0);
-    BYTES_EQUAL(0x1, led_image);
+    BYTES_EQUAL(0x00, led_image);
+}
+
+TEST(led_panel, invalid_group_2)
+{
+    led_panel_group(0xFF);
+    led_panel_update(0);
+    BYTES_EQUAL(0x00, led_image);
 }
 
 

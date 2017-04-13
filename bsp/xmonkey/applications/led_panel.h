@@ -41,8 +41,10 @@ struct led_hw_ops
 #define LED_MODE_FLIP_32    (7)  /* 翻转，32节拍 */
 #define LED_MODE_FLIP_64    (8)  /* 翻转，64节拍 */
 
-#define LED_MODE_PATTERN_1  (9)  /* 模式，3关1开 */
-#define LED_MODE_PATTERN_2  (10) /* 模式，1关1开3关 */
+#define LED_MODE_PATTERN_1  (9)  /* 模式，1000 */
+#define LED_MODE_PATTERN_2  (10) /* 模式，11001010 */
+#define LED_MODE_PATTERN_3  (11) /* 模式，00000001 */
+#define LED_MODE_PATTERN_4  (12) /* 模式，00001111 00000101 */
 
 
 /* LED IMAGE */
@@ -51,6 +53,11 @@ struct led_hw_ops
 #define LED_IMAGE_2         (0x04)
 #define LED_IMAGE_3         (0x08)
 #define LED_IMAGE_ALL       (LED_IMAGE_0 | LED_IMAGE_1 | LED_IMAGE_2 | LED_IMAGE_3)
+
+/* Group working mode */
+#define LED_GROUP_1         (0)
+#define LED_GROUP_2         (1)
+
 
 /*
  * 驱动，每个节拍需要由外部线程/硬件定时器调用此函数更新LED状态
@@ -70,9 +77,13 @@ extern void led_panel_init(struct led_hw_ops* ops);
  */
 extern void led_panel_mode(rt_uint8_t image, rt_uint8_t mode);
 
-//typedef rt_uint8_t (*get_bitmap)(rt_uint32_t tick) ;
-extern void led_panel_custom(rt_uint8_t (*get_bitmap)(rt_uint32_t tick));
-
+/*
+ * 设置LED成组工作模式
+ * 本模块内置了两个组工作模式
+ * group_1: 流水灯
+ * group_2: 交叉闪烁
+ */
+extern void led_panel_group(rt_uint8_t group);
 
 extern void led_panel_on(rt_uint8_t image);
 extern void led_panel_off(rt_uint8_t image);
