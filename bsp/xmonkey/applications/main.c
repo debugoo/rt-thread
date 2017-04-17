@@ -3,6 +3,7 @@
 #include "string.h"
 #include "pinx.h"
 #include "led_panel.h"
+#include "hwchk.h"
 
 #define LED0_PIN PB4
 #define LED1_PIN PB2
@@ -47,34 +48,49 @@ void turn_off(rt_uint8_t index)
 struct led_hw_ops ops = {turn_on, turn_off};
 
 rt_uint8_t modes[4] = {LED_MODE_SWITCH_ON, LED_MODE_FLIP_8, LED_MODE_PATTERN_1, LED_MODE_PATTERN_2};
-rt_uint32_t custpat[4] = {0xFF, 0x3E, 0x1C, 0x08};
-
-static rt_uint8_t custom(rt_uint32_t tick)
-{
-    rt_uint32_t reminder = tick%16;
-    int i;
-    rt_uint8_t tmp = 0;
-    for (i = 0; i < 4; ++i)
-    {
-        rt_uint8_t bit = ((1<<reminder)&custpat[i])?1:0;
-        tmp |= bit<<i;
-    }
-    return tmp;
-}
 
 
 static void main_run(void* parameter)
 {
+    hw_check();
+}
+static void main_run2(void* parameter)
+{
     rt_uint8_t mode = LED_MODE_FLIP_1;
+    rt_uint8_t modes[10] = {
+        LED_MODE_SWITCH_OFF,
+        LED_MODE_SWITCH_ON,
+        LED_MODE_FLIP_1,
+        LED_MODE_FLIP_2,
+        LED_MODE_FLIP_4,
+        LED_MODE_FLIP_8,
+        LED_MODE_PATTERN_1,
+        LED_MODE_PATTERN_2,
+        LED_MODE_PATTERN_3,
+        LED_MODE_PATTERN_4
+    };
+    int i;
     RT_ASSERT(prolog() == RT_EOK);
     led_panel_init(&ops);
+    rt_timer_start(&t);
+    for (i = 0; i < 10; ++i)
+    {
+        led_panel_mode(LED_IMAGE_ALL, modes[i]);
+        rt_thread_delay(200);
+    }
+    led_panel_group(LED_GROUP_1);
+    rt_thread_delay(500);
+    led_panel_group(LED_GROUP_2);
+    rt_thread_delay(500);
+    while(1);
 
     led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_ON);
     led_panel_mode(LED_IMAGE_1, LED_MODE_FLIP_8);
     led_panel_mode(LED_IMAGE_2, LED_MODE_PATTERN_1);
     led_panel_mode(LED_IMAGE_3, LED_MODE_PATTERN_2);
-    led_panel_mode(LED_IMAGE_ALL, LED_MODE_FLIP_1);
-    led_panel_custom(custom);
+    led_panel_mode(LED_IMAGE_ALL, LED_MODE_PATTERN_4);
+    led_panel_group(LED_GROUP_2);
+    //led_panel_custom(custom);
     rt_timer_start(&t);
     while(1);
     while(1)

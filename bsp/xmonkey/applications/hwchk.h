@@ -13,25 +13,13 @@
  *****************************************************************************/
 
 
-#ifndef __HWTEST_H
-#define __HWTEST_H
+#ifndef __HW_CHECK_H
+#define __HW_CHECK_H
 
 #include <rtthread.h>
 
 
-extern rt_err_t bus_init(void);
-extern rt_err_t bus_deinit(void);
-
-
-extern rt_err_t hw_check_mpu9250(void);
-
-extern rt_err_t hw_check_bmp180(void);
-
-extern rt_err_t hw_check_sht20(void);
-
-extern rt_err_t hw_check_sim868(void);
-
-
+extern void hw_check(void);
 
 
 
