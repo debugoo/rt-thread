@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Option parameters="-v" />
 				<Compiler>
+					<Add option="-std=c99" />
 					<Add option="-g" />
 					<Add directory="../../../applications" />
 					<Add directory="../../../../xmonkey" />

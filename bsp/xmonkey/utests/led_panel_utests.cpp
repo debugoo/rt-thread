@@ -325,8 +325,8 @@ TEST(led_panel, flip_2)
     {
         led_panel_update(i);
     }
-    CHECK_EQUAL(25, cnt[0].on);
-    CHECK_EQUAL(25, cnt[0].off);
+    CHECK_EQUAL(50, cnt[0].on);
+    CHECK_EQUAL(50, cnt[0].off);
 }
 
 TEST(led_panel, flip_4)
@@ -337,8 +337,8 @@ TEST(led_panel, flip_4)
     {
         led_panel_update(i);
     }
-    CHECK_EQUAL(100, cnt[0].on);
-    CHECK_EQUAL(100, cnt[0].off);
+    CHECK_EQUAL(400, cnt[0].on);
+    CHECK_EQUAL(400, cnt[0].off);
 }
 
 TEST(led_panel, flip_8)
@@ -349,8 +349,8 @@ TEST(led_panel, flip_8)
     {
         led_panel_update(i);
     }
-    CHECK_EQUAL(100, cnt[0].on);
-    CHECK_EQUAL(100, cnt[0].off);
+    CHECK_EQUAL(800, cnt[0].on);
+    CHECK_EQUAL(800, cnt[0].off);
 }
 
 TEST(led_panel, flip_16)
@@ -361,8 +361,8 @@ TEST(led_panel, flip_16)
     {
         led_panel_update(i);
     }
-    CHECK_EQUAL(100, cnt[0].on);
-    CHECK_EQUAL(100, cnt[0].off);
+    CHECK_EQUAL(1600, cnt[0].on);
+    CHECK_EQUAL(1600, cnt[0].off);
 }
 
 TEST(led_panel, flip_32)
@@ -373,8 +373,8 @@ TEST(led_panel, flip_32)
     {
         led_panel_update(i);
     }
-    CHECK_EQUAL(100, cnt[0].on);
-    CHECK_EQUAL(100, cnt[0].off);
+    CHECK_EQUAL(3200, cnt[0].on);
+    CHECK_EQUAL(3200, cnt[0].off);
 }
 
 TEST(led_panel, flip_64)
@@ -385,87 +385,61 @@ TEST(led_panel, flip_64)
     {
         led_panel_update(i);
     }
-    CHECK_EQUAL(100, cnt[0].on);
-    CHECK_EQUAL(100, cnt[0].off);
+    CHECK_EQUAL(6400, cnt[0].on);
+    CHECK_EQUAL(6400, cnt[0].off);
 }
 
 /*
  * pattern mode
  */
-
-
 TEST(led_panel, pattern_1)
 {
     rt_uint32_t i;
-    rt_uint32_t cnt_on = 0;
-    rt_uint32_t cnt_off = 0;
 
     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_1);
     for (i = 0; i < 80; ++i)
     {
         led_panel_update(i);
-        (led_image&1)?cnt_on++:cnt_off++;
         
     }
-    CHECK_EQUAL(10, cnt[0].on);
-    CHECK_EQUAL(30, cnt[0].off);
-
-    CHECK_EQUAL(20, cnt_on);
-    CHECK_EQUAL(60, cnt_off);
+    CHECK_EQUAL(20, cnt[0].on);
+    CHECK_EQUAL(60, cnt[0].off);
 }
 
 TEST(led_panel, pattern_2)
 {
     rt_uint32_t i;
-    rt_uint32_t cnt_on = 0;
-    rt_uint32_t cnt_off = 0;
     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_2);
     for (i = 0; i < 160; ++i)
     {
         led_panel_update(i);
-        (led_image&1)?cnt_on++:cnt_off++;
     }
-    CHECK_EQUAL(40, cnt[0].on);
-    CHECK_EQUAL(40, cnt[0].off);
-
-    CHECK_EQUAL(80, cnt_on);
-    CHECK_EQUAL(80, cnt_off);
+    CHECK_EQUAL(80, cnt[0].on);
+    CHECK_EQUAL(80, cnt[0].off);
 }
 
 TEST(led_panel, pattern_3)
 {
     rt_uint32_t i;
-    rt_uint32_t cnt_on = 0;
-    rt_uint32_t cnt_off = 0;
     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_3);
     for (i = 0; i < 160; ++i)
     {
         led_panel_update(i);
-        (led_image&1)?cnt_on++:cnt_off++;
     }
-    CHECK_EQUAL(10, cnt[0].on);
-    CHECK_EQUAL(70, cnt[0].off);
-
-    CHECK_EQUAL(20, cnt_on);
-    CHECK_EQUAL(140, cnt_off);
+    CHECK_EQUAL(20, cnt[0].on);
+    CHECK_EQUAL(140, cnt[0].off);
 }
 
 TEST(led_panel, pattern_4)
 {
     rt_uint32_t i;
-    rt_uint32_t cnt_on = 0;
-    rt_uint32_t cnt_off = 0;
     led_panel_mode(LED_IMAGE_0, LED_MODE_PATTERN_4);
     for (i = 0; i < 320; ++i)
     {
         led_panel_update(i);
-        (led_image&1)?cnt_on++:cnt_off++;
     }
-    CHECK_EQUAL(60, cnt[0].on);
-    CHECK_EQUAL(100, cnt[0].off);
-
-    CHECK_EQUAL(120, cnt_on);
-    CHECK_EQUAL(200, cnt_off);
+    CHECK_EQUAL(120, cnt[0].on);
+    CHECK_EQUAL(200, cnt[0].off);
 }
 
 IGNORE_TEST(led_panel, fast_switch_on)
@@ -475,9 +449,52 @@ IGNORE_TEST(led_panel, fast_switch_on)
 IGNORE_TEST(led_panel, fast_switch_off)
 {
 }
+/*
+ * update every single time
+ */
+TEST(led_panel, update_off)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_OFF);
+    for (i = 0; i < 10; ++i)
+    {
+        led_panel_update(i);
+        
+    }
+    CHECK_EQUAL(10, cnt[0].off);
+}
+TEST(led_panel, update_on)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_ON);
+    for (i = 0; i < 10; ++i)
+    {
+        led_panel_update(i);
+        
+    }
+    CHECK_EQUAL(10, cnt[0].on);
+}
+/*
+ * mode switch
+ */
+/*
+TEST(led_panel, switch_on_off)
+{
+    rt_uint32_t i;
+    led_panel_mode(LED_IMAGE_0, LED_MODE_SWITCH_OFF);
+    for (i = 0; i < 10; ++i)
+    {
+        led_panel_update(i);
+        (led_image&1)?cnt_on++:cnt_off++;
+        
+    }
+    CHECK_EQUAL(0, cnt[0].off);
+}
+*/
 
-
-
+/*
+ * group
+ */
 TEST(led_panel, group_1)
 {
     struct image_counter x[4];

@@ -10,6 +10,13 @@
  Description    :    to be define
  History        :
 
+ Date            Author      Note
+ =====================================================================
+ 2017/04/07      xujun       created
+ 2017/04/17      xujun       在位宽的边界上更新（而不是每节拍更新）会
+                             导致在ON/OFF状态切换时，不能有效地反映出
+                             更新结果。因此需要修改为强制在每节拍上更新
+
  *****************************************************************************/
 #include "led_panel.h"
 
@@ -116,28 +123,17 @@ static void set_pattern(rt_uint8_t index, rt_bool_t on)
  */
 static void led_panel_update_single(rt_uint32_t tick, rt_uint8_t index)
 {
+    /* 获取当前模式 */
     const struct bit_pattern *pat = pat_active[index];
-    /* expand pattern */
+    /* 根据位宽计算出模式的实际节拍长度 */
     rt_uint32_t pat_tick = pat->pattern_sz * pat->bit_width;
-    /* alignment at pattern boundary */
+    /* 在节拍上进行模式边界对齐 */
     rt_uint32_t reminder = tick%pat_tick;
-    if (reminder%pat->bit_width == 0)
-    {
-        /* 在位边界上,开始更新 */
-        rt_uint8_t pos = reminder/pat->bit_width;
-        rt_bool_t onoff = ((1<<pos)&pat->bitmap);
-        set_pattern(index, onoff);
-    }
+    /* 在模式周期内，根据局部节拍序号，剥离位宽，查找当前待更新位 */
+    rt_uint8_t pos = reminder/pat->bit_width;
+    rt_bool_t onoff = ((1<<pos)&pat->bitmap);
+    set_pattern(index, onoff);
 }
-static void led_panel_update_group(rt_uint32_t tick)
-{
-    rt_uint8_t i;
-    for (i = 0; i < LED_COUNT; ++i)
-    {
-        led_panel_update_single(tick, i);
-    }
-}
-
 
 void led_panel_update(rt_uint32_t tick)
 {
