@@ -1,0 +1,24 @@
+定义设备
+STM32F405RGTx
+
+定义目标
+Xtal(MHz) 8.0
+
+定义输出
+Name of Executable: xmonkey
+
+工程根目录
+xmonkey
+
+c/c++
+C99 Mode
+
+定义宏
+RT_USING_ARM_LIBC, USE_STDPERIPH_DRIVER
+
+Debug
+ST-Link Debugger
+
+定义晶振频率
+HSE_VALUE=8000000
+外部HSI？？？
