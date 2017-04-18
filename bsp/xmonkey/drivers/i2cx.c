@@ -305,6 +305,18 @@ void I2C2_LowLevel_DMA_RxConfig(rt_device_t dev, rt_uint8_t *BufferDST, rt_uint1
 }
 #endif
 
+/*
+ * Function: i2c_bus_device_read
+ * ----------------------------
+ *   Read any bytes from device
+ *
+ *   dev    : Source device
+ *   pos    : The I2C address of dev, This is the 8 bits address with LSB bit 0
+ *   buffer : The buffer which holder the bytes to be read
+ *   count  : The bytes count in buffer
+ *
+ *   returns: RT_EOK when read successfully, otherwise indicate some error occurs
+ */
 static rt_size_t i2c_bus_device_read(rt_device_t dev,
                                      rt_off_t    pos,
                                      void       *buffer,
@@ -401,6 +413,18 @@ static rt_size_t i2c_bus_device_read_sync(rt_device_t dev,
     return bus->error;
 }
 
+/*
+ * Function: i2c_bus_device_write
+ * ----------------------------
+ *   Write any bytes to device
+ *
+ *   dev    : Target device
+ *   pos    : The I2C address of dev, This is the 8 bits address with LSB bit 0
+ *   buffer : The buffer which holder the bytes to be written
+ *   count  : The bytes count in buffer
+ *
+ *   returns: RT_EOK when write successfully, otherwise indicate some error occurs
+ */
 static rt_size_t i2c_bus_device_write(rt_device_t dev,
                                       rt_off_t    pos,
                                       const void *buffer,
