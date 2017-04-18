@@ -14,18 +14,20 @@
 
 #include "hwchk.h"
 #include "led_panel.h"
-#include "pinx.h"
+//#include "pinx.h"
 #include "i2cx.h"
+#include "inv_mpu.h"
 
 
 
 static rt_device_t i2c_bus = RT_NULL;
 
-#define I2C_ADDR_MPU9250    (0x68)
+#define I2C_ADDR_MPU9250    (0x68<<1) /* 1101000 */
 
 #define REG_MPU9250_WHOAMI  (0x75)
 
 
+/*
 #define LED0_PIN PB4
 #define LED1_PIN PB2
 #define LED2_PIN PB3
@@ -66,7 +68,7 @@ static void led_init(void)
     rt_timer_init(&t, "ledt", timeout, RT_NULL, 10, RT_TIMER_FLAG_PERIODIC);
     rt_timer_start(&t);
 }
-
+*/
 
 /* 初始化失败则所有LED */
 rt_err_t bus_init(void)
@@ -90,6 +92,14 @@ rt_err_t hw_check_mpu9250(void)
     rt_uint8_t tmp;
     rt_uint8_t addr;
     rt_size_t size;
+    struct int_param_s int_param;
+    int result;
+
+    result = mpu_init(&int_param);
+    if (result)
+    {
+        return -RT_ERROR;
+    }
 
     addr = I2C_ADDR_MPU9250;
     tmp = REG_MPU9250_WHOAMI;
@@ -170,7 +180,7 @@ void check_phase_module(void)
 
 void hw_check(void)
 {
-    led_init();
+    //led_init();
     check_phase_led();
     check_phase_gap();
     check_phase_module();

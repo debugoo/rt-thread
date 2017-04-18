@@ -27,6 +27,7 @@
 #include "rtcx.h"
 #include "gpio.h"
 
+
 #ifdef RT_USING_FINSH
 #include <finsh.h>
 #else
@@ -96,16 +97,18 @@ void SysTick_Handler(void)
     rt_interrupt_leave();
 }
 
-/*
+/* power control */
 #define PIN_PWR_EN_LCD    PC4
 #define PIN_PWR_EN_VBUS   PC5
 #define PIN_PWR_EN_GPS    PC6
-#define PIN_PWR_EN_SENS   PC7
+#define PIN_PWR_EN_SENS   PB12
 static void power_init(void)
 {
+    /*
     rt_pin_mode(PIN_PWR_EN_LCD,  PIN_MODE_OUT_PP);
     rt_pin_mode(PIN_PWR_EN_VBUS, PIN_MODE_OUT_PP);
     rt_pin_mode(PIN_PWR_EN_GPS,  PIN_MODE_OUT_PP);
+    */
     rt_pin_mode(PIN_PWR_EN_SENS, PIN_MODE_OUT_PP);
 }
 static void power_on_sensor(void)
@@ -116,7 +119,10 @@ static void power_off_sensor(void)
 {
     rt_pin_write(PIN_PWR_EN_SENS, PIN_LOW);
 }
-*/
+
+
+
+
 /**
  * This function will initial STM32 board.
  */
@@ -130,8 +136,8 @@ void rt_hw_board_init()
 
 #ifdef RT_USING_PINX
     rt_hw_pin_init();
-    //power_init();
-    //power_on_sensor();
+    power_init();
+    power_on_sensor();
 #endif
 
 #ifdef RT_USING_UARTX

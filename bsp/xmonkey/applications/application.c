@@ -32,6 +32,7 @@
 //#include <sys/fcntl.h>
 #include "config.h"
 #include "log_trace.h"
+#include "bsp_led_panel.h"
 
 
 void rt_init_thread_entry(void* parameter)
@@ -144,11 +145,14 @@ void rt_init_thread_entry(void* parameter)
         rt_kprintf("TCP/IP initialized!\n");
     }
 #endif
+    /*
     RT_ASSERT(RT_EOK == dbg_init());
     DBG_PRINT("DBG_UART opened...\n");
+    */
 
     RT_ASSERT(RT_EOK == log_trace_app_init());
 
+    bsp_led_panel_init();
     start_thread_led();
 }
 

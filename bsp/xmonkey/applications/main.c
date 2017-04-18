@@ -107,7 +107,7 @@ static void main_run2(void* parameter)
 }
 
 ALIGN(RT_ALIGN_SIZE)
-static rt_uint8_t       thread_stack[ 256 ];
+static rt_uint8_t       thread_stack[ 1024*4 ];
 static struct rt_thread thread_handle;
 
 rt_err_t start_thread_led(void)

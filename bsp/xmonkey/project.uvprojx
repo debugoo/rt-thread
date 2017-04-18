@@ -371,9 +371,9 @@
             <vShortWch>0</vShortWch>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>RT_USING_ARM_LIBC, USE_STDPERIPH_DRIVER</Define>
+              <Define>RT_USING_ARM_LIBC, MPU9250, USE_STDPERIPH_DRIVER, EMPL_TARGET_STM32, STM32F4XX, HSE_VALUE=8000000</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;.;drivers;Libraries\STM32F4xx_StdPeriph_Driver\inc;Libraries\CMSIS\ST\STM32F4xx\Include;Libraries\CMSIS\Include;..\..\lib\minini;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\armlibc;..\..\components\utilities\logtrace</IncludePath>
+              <IncludePath>applications;.;drivers;Libraries\STM32F4xx_StdPeriph_Driver\inc;Libraries\CMSIS\ST\STM32F4xx\Include;Libraries\CMSIS\Include;..\..\lib\minini;..\..\lib\mpl\mllite;..\..\lib\mpl;..\..\lib\mpl\driver\include;..\..\lib\mpl\mpl;..\..\lib\mpl\eMPL-hal;..\..\lib\mpl\driver\eMPL;..\..\include;..\..\libcpu\arm\cortex-m4;..\..\libcpu\arm\common;..\..\components\dfs\include;..\..\components\dfs\filesystems\devfs;..\..\components\dfs\filesystems\elmfat;..\..\components\drivers\include;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\armlibc;..\..\components\utilities\logtrace</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -406,7 +406,7 @@
             <ScatterFile></ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc>--keep *.o(FSymTab) --keep *.o(VSymTab)</Misc>
+            <Misc>D:\YL\rt-thread\lib\mpl\lib\libmpllib.lib  --keep *.o(FSymTab) --keep *.o(VSymTab)</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
@@ -437,6 +437,16 @@
               <FilePath>applications\dbg_uart.c</FilePath>
             </File>
             <File>
+              <FileName>hwchk.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\hwchk.c</FilePath>
+            </File>
+            <File>
+              <FileName>led_panel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\led_panel.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\main.c</FilePath>
@@ -452,14 +462,9 @@
               <FilePath>applications\startup.c</FilePath>
             </File>
             <File>
-              <FileName>led_panel.c</FileName>
+              <FileName>mpu_log.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\led_panel.c</FilePath>
-            </File>
-            <File>
-              <FileName>hwchk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\hwchk.c</FilePath>
+              <FilePath>.\applications\mpu_log.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -505,6 +510,11 @@
               <FileName>uartx.c</FileName>
               <FileType>1</FileType>
               <FilePath>drivers\uartx.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_led_panel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\drivers\bsp_led_panel.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -685,6 +695,76 @@
               <FileName>minIni.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\lib\minini\minIni.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>MPL</GroupName>
+          <Files>
+            <File>
+              <FileName>mpu_platform_porting.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mpu_platform_porting.c</FilePath>
+            </File>
+            <File>
+              <FileName>inv_mpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\driver\eMPL\inv_mpu.c</FilePath>
+            </File>
+            <File>
+              <FileName>inv_mpu_dmp_motion_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\driver\eMPL\inv_mpu_dmp_motion_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>eMPL_outputs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\eMPL-hal\eMPL_outputs.c</FilePath>
+            </File>
+            <File>
+              <FileName>data_builder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\data_builder.c</FilePath>
+            </File>
+            <File>
+              <FileName>hal_outputs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\hal_outputs.c</FilePath>
+            </File>
+            <File>
+              <FileName>message_layer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\message_layer.c</FilePath>
+            </File>
+            <File>
+              <FileName>mlmath.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\mlmath.c</FilePath>
+            </File>
+            <File>
+              <FileName>ml_math_func.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\ml_math_func.c</FilePath>
+            </File>
+            <File>
+              <FileName>mpl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\mpl.c</FilePath>
+            </File>
+            <File>
+              <FileName>results_holder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\results_holder.c</FilePath>
+            </File>
+            <File>
+              <FileName>start_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\start_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>storage_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\lib\mpl\mllite\storage_manager.c</FilePath>
             </File>
           </Files>
         </Group>

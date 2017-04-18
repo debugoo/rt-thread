@@ -180,6 +180,8 @@
 
 /* extention library */
 #define RT_USING_LIB_MININI
+#define RT_USING_LIB_MPL
+
 
 /* serial */
 #define RT_USING_UARTX
@@ -199,6 +201,5 @@
 /* I2C */
 #define RT_USING_I2CX
 #define RT_USING_I2C1
-
 
 #endif
